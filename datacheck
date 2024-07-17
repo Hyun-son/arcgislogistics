@@ -1,0 +1,43 @@
+from arcgis.gis import GIS
+from arcgis.features import FeatureLayer
+
+
+# 항목 ID로 항목 가져오기 (레이어선택)
+item = gis.content.get("fe800f6d33a94c4ba7c4361c53ab3022") 
+
+# 항목 기본 정보 출력
+print("Title:", item.title)
+print("Type:", item.type)
+print("Owner:", item.owner)
+print("Description:", item.description)
+print("Tags:", item.tags)
+print("Created:", item.created)
+print("Modified:", item.modified)
+
+# 항목이 피처 서비스일 경우, 레이어 정보 출력 및 데이터 조회
+if item.type == "Feature Service":
+    feature_layers = item.layers
+    for layer in feature_layers:
+        print("\nLayer Name:", layer.properties.name)
+        print("Layer Type:", layer.properties.type)
+        print("Layer Description:", layer.properties.description)
+        print("Layer Fields:")
+        for field in layer.properties.fields:
+            print(" -", field['name'], "(", field['type'], ")")
+        
+        # 레이어의 첫 5개 피처 가져오기
+        features = layer.query(where="1=1", out_fields="*", return_geometry=True, max_count=5).features
+        for feature in features:
+            print("\nFeature Attributes:")
+            for key, value in feature.attributes.items():
+                print(f" - {key}: {value}")
+            
+            # 피처의 좌표 값 출력
+            geometry = feature.geometry
+            print("Feature Geometry:")
+            if 'x' in geometry and 'y' in geometry:  # Point
+                print(f" - Point: ({geometry['x']}, {geometry['y']})")
+            elif 'rings' in geometry:  # Polygon
+                print(f" - Polygon Rings: {geometry['rings']}")
+            elif 'paths' in geometry:  # Polyline
+                print(f" - Polyline Paths: {geometry['paths']}")
